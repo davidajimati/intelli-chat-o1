@@ -9,10 +9,10 @@ class ApiResponseContract:
     data: dict | str | Any = None
 
     @classmethod
-    def create_success_response(cls, data: data or None):
+    async def success_response(cls, data: data or None = None) -> dict:
         instance = cls()
         return {"code": instance.code, "msg": instance.msg, "data": data}
 
     @classmethod
-    def create_failure_response(cls, data: data or None):
+    async def failure_response(cls, data: data or None = None) -> dict:
         return {"code": "99", "msg": "Failed", "data": data}
