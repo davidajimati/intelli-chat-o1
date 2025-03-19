@@ -6,14 +6,15 @@ from model.UserDbEntity import NewUser
 from model.UserDbEntity import UserDbEntity
 from starlette.exceptions import HTTPException
 from langchain_mongodb import MongoDBChatMessageHistory
+from database.ChatHistoryManager import ChatHistoryManager
 
 api_response = ApiResponseContract()
+chat_history_manager = ChatHistoryManager()
 
 
 class UserOperations:
     def __init__(self):
         self.user_client = MongoDB().users_collection
-        self.user_chat_history = MongoDB().chat_history_collection
 
     async def create_user(self, user: NewUser):
         user_entity = UserDbEntity(username=user.username, email=user.email)
@@ -34,7 +35,9 @@ class UserOperations:
         sessions = list(user.get("session_id_list") or None)
 
         if len(sessions) > 0:
-            self.user_chat_history.delete_many({"session_id": {"$in": sessions}})
+            for session in sessions:
+                history = await chat_history_manager.history_instance(session)
+                history.clear()
         return await api_response.success_response("account deleted successfully")
 
     @staticmethod
@@ -46,7 +49,7 @@ class UserOperations:
         new_session_id = UUID1()
         return await api_response.success_response(new_session_id)
 
-    async def add_new_session(self, session_id: UUID1, title: str, email: EmailStr) -> bool:
+    async def add_new_session(self, session_id: str, title: str, email: EmailStr) -> bool:
         """
         add new session ID to user records
         :param title: chat title

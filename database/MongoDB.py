@@ -1,3 +1,4 @@
+from langchain_mongodb import MongoDBChatMessageHistory
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 
