@@ -7,7 +7,7 @@ class ChatHistoryManager:
         self.connection_string = (os.getenv("MONGODB_URL_FOR_HISTORY"))
         self.collection = "chat_history"
 
-    async def history_instance(self, session_id: str):
+    async def history_instance(self, session_id: str) -> MongoDBChatMessageHistory:
         return MongoDBChatMessageHistory(
             session_id=str(session_id),
             connection_string=self.connection_string,
