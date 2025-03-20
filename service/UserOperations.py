@@ -67,7 +67,9 @@ class UserOperations:
 
     @staticmethod
     async def get_chat_history(session_id: str) -> dict:
-        history = await dbHistory.history_instance(session_id)
-        if not history:
+        db_history = await dbHistory.history_instance(session_id)
+        if not db_history:
             raise HTTPException(status_code=404, detail="No chat history yet")
-        return await apiResponse.success_response(history.messages)
+        history = await db_history.aget_messages()
+        history_list = [{chat.type :chat.content} for chat in history]
+        return await apiResponse.success_response(history_list)
