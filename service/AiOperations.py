@@ -6,8 +6,10 @@ from database.MongoDB import MongoDB
 from model.UserChatModel import UserChatModel
 from langchain_groq import ChatGroq
 from database.ChatHistoryManager import ChatHistoryManager
-from langchain.schema import SystemMessage, HumanMessage
+from langchain.schema import SystemMessage
+from dotenv import load_dotenv
 
+load_dotenv()
 chatHistoryDB = ChatHistoryManager()
 
 llm = ChatGroq(
@@ -22,7 +24,7 @@ class AiOperations:
     def __init__(self):
         self.user_client = MongoDB().users_collection
 
-    async def chat_ai(self, chat_input: UserChatModel) -> str:
+    async def chat_ai(self, chat_input: UserChatModel) -> dict:
         """
         send message to the llm
         :param chat_input:
@@ -33,7 +35,7 @@ class AiOperations:
         messages = await chat.aget_messages()
         ai_response = llm.invoke(messages)
         chat.add_ai_message(ai_response.content)
-        return ai_response.content
+        return {"session_id": chat_input.session_id, "response":ai_response.content}
 
     @staticmethod
     async def instantiate_chat(chat_model: UserChatModel) -> MongoDBChatMessageHistory:

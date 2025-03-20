@@ -6,15 +6,24 @@ from model.UserChatModel import UserChatModel
 from model.UserDbEntity import NewUser
 from service.UserOperations import UserOperations, apiResponse
 from service.AiOperations import AiOperations
+from database.MongoDB import MongoDB
+import os
 
 load_dotenv()
+
 app = FastAPI()
+db = MongoDB()
 userOperations = UserOperations()
 aiOperations = AiOperations()
 
 
+@app.on_event("startup")
+async def start_up_event():
+    db.users_collection.create_index("email", unique=True)
+
+
 @app.post("/create-new-user")
-async def create_new_user(user: NewUser) -> dict:
+async def create_new_user(user: NewUser):
     """
     create a new user
     :param user:
@@ -24,7 +33,7 @@ async def create_new_user(user: NewUser) -> dict:
 
 
 @app.delete("/delete-user/{email}")
-async def create_new_user(email: EmailStr) -> dict:
+async def delete_user(email: EmailStr):
     """
     delete all user records. this action is irreversible
     :param email:
@@ -34,7 +43,7 @@ async def create_new_user(email: EmailStr) -> dict:
 
 
 @app.get("/new-session")
-async def new_session() -> dict:
+async def new_session():
     """
     create a new session ID for a new chat
     :return:
@@ -43,7 +52,7 @@ async def new_session() -> dict:
 
 
 @app.get("/chats-list/{email}")
-async def get_chat_list(email: EmailStr) -> dict:
+async def get_chat_list(email: EmailStr):
     """
     fetch all list of past chats with the LLM
     :param email:
@@ -53,7 +62,7 @@ async def get_chat_list(email: EmailStr) -> dict:
 
 
 @app.get("/chat-history/{session_id}")
-async def get_chat_history(session_id: str) -> dict:
+async def get_chat_history(session_id: str):
     """
     get chat history for current session
     :param session_id:
@@ -63,11 +72,11 @@ async def get_chat_history(session_id: str) -> dict:
 
 
 @app.post("/chat_input")
-async def chat_ai(message: UserChatModel) -> dict:
+async def chat_ai(message: UserChatModel):
     """
     chat with the LLM
     :param message: user input. contains sessionId and
     :return dict[str]:
     """
-    ai_response =  await aiOperations.chat_ai(message)
-    return apiResponse.success_response({"message": ai_response})
+    ai_response = await aiOperations.chat_ai(message)
+    return await apiResponse.success_response({"message": ai_response})
