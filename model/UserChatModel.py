@@ -7,6 +7,6 @@ user_operations = UserOperations()
 
 class UserChatModel(BaseModel):
     session_id: str | None = Field(default_factory=lambda: str(uuid.uuid4()))
-    # email: EmailStr
+    email: EmailStr
     message: str
-    ai_character: str = Field(default="You're a helpful assistant")
+    ai_character: str = Field(default="You're a funny, helpful and intelligent assistant. Your name is David")

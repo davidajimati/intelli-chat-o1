@@ -1,15 +1,14 @@
 import os
 from langchain_mongodb import MongoDBChatMessageHistory
+from pymongo import MongoClient
 
 
 class ChatHistoryManager:
-    def __init__(self):
-        self.connection_string = (os.getenv("MONGODB_URL_FOR_HISTORY"))
-        self.collection = "chat_history"
-
-    async def history_instance(self, session_id: str) -> MongoDBChatMessageHistory:
+    @staticmethod
+    async def history_instance(session_id: str) -> MongoDBChatMessageHistory:
         return MongoDBChatMessageHistory(
+            collection_name="chat_history",
             session_id=str(session_id),
-            connection_string=self.connection_string,
-            collection_name=self.collection
+            connection_string=os.getenv("MONGODB_URL"),
+            database_name="intelli_chat_o1"
         )
