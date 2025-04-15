@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from pydantic import EmailStr
 
-from model.UserChatModel import UserChatModel
+from model.UserChatModel import UserChatModel, ChatTitleModel
 from model.UserDbEntity import NewUser
 from service.UserOperations import UserOperations, apiResponse
 from service.AiOperations import AiOperations
@@ -31,6 +31,22 @@ async def create_new_user(user: NewUser):
     """
     return await userOperations.create_user(user)
 
+@app.get("/get-all-users")
+async def get_all_users():
+    """
+    get the list of registered users
+    :return: list[str]
+    """
+    return await userOperations.get_all_users()
+
+@app.put("/update-username")
+async def update_username(user_details: NewUser):
+    """
+    update username of an existing user
+    :param user_details:
+    :return:
+    """
+    return await userOperations.update_username(user_details)
 
 @app.delete("/delete-user/{email}")
 async def delete_user(email: EmailStr):
@@ -40,7 +56,6 @@ async def delete_user(email: EmailStr):
     :return dict[str]:
     """
     return await userOperations.delete_user(email)
-
 
 @app.get("/new-session")
 async def new_session():
@@ -70,6 +85,13 @@ async def get_chat_history(session_id: str):
     """
     return await userOperations.get_chat_history(session_id)
 
+@app.put("/chat/update-title")
+async def update_chat_title(payload: ChatTitleModel):
+    """
+    update the title of a chat with the model.
+    :return: dict
+    """
+    return  await aiOperations.update_chat_title(payload)
 
 @app.post("/chat_input")
 async def chat_ai(message: UserChatModel):

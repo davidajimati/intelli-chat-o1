@@ -10,3 +10,9 @@ class UserChatModel(BaseModel):
     email: EmailStr
     message: str
     ai_character: str = Field(default="You're a funny, helpful and intelligent assistant. Your name is David")
+
+
+class ChatTitleModel(BaseModel):
+    session_id: str
+    email: EmailStr
+    new_title: str

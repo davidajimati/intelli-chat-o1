@@ -20,7 +20,7 @@ class UserOperations:
 
     async def create_user(self, user: NewUser):
         existing_user = await self.user_client.find_one({
-            "$or": [{"email":user.email},
+            "$or": [{"email": user.email},
                     {"username": user.username}]
         })
         if existing_user:
@@ -62,8 +62,10 @@ class UserOperations:
         user = await self.user_client.find_one({"email": email})
         if not user:
             raise HTTPException(status_code=404, detail="chats not found")
-        history: list = list(user.get("session_list") or [])
-        return await apiResponse.success_response(history)
+        sessions = user.get("session_list")
+        if not isinstance(sessions, list):
+            sessions = []
+        return await apiResponse.success_response(sessions)
 
     @staticmethod
     async def get_chat_history(session_id: str) -> dict:
@@ -71,5 +73,18 @@ class UserOperations:
         if not db_history:
             raise HTTPException(status_code=404, detail="No chat history yet")
         history = await db_history.aget_messages()
-        history_list = [{chat.type :chat.content} for chat in history]
+        history_list = [{chat.type: chat.content} for chat in history]
         return await apiResponse.success_response(history_list)
+
+    async def get_all_users(self):
+        user_cursor = self.user_client.find()
+        users = await user_cursor.to_list(length=None)
+        return await apiResponse.success_response([{"username": x["username"], "email": x["email"]} for x in users])
+
+    async def update_username(self, user_details: NewUser):
+        user_record = await self.user_client.find_one({"email": user_details.email})
+        if user_record is None:
+            raise HTTPException(status_code=404, detail="Account does not exist")
+
+        await self.user_client.update_one({"email": user_details.email}, {"$set": {"username": user_details.username}})
+        return await apiResponse.success_response("username updated")
