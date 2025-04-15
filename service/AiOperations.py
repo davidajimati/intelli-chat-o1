@@ -1,17 +1,14 @@
+from dotenv import load_dotenv
+from langchain.schema import SystemMessage
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_groq import ChatGroq
 from langchain_mongodb import MongoDBChatMessageHistory
 from pydantic import EmailStr
-from sqlalchemy.dialects.postgresql import Any
-from sqlalchemy.util import await_only
 from starlette.exceptions import HTTPException
 
+from database.ChatHistoryManager import ChatHistoryManager
 from database.MongoDB import MongoDB
 from model.UserChatModel import UserChatModel, ChatTitleModel
-from langchain_groq import ChatGroq
-from database.ChatHistoryManager import ChatHistoryManager
-from langchain.schema import SystemMessage
-from dotenv import load_dotenv
-
 from model.UserDbEntity import UserDbEntity
 from service.UserOperations import apiResponse
 
@@ -122,5 +119,5 @@ class AiOperations:
                 break
         if record_found:
             await self.user_client.update_one({"email": payload.email}, {"$set": {"session_list": chat_history}})
-            return  await apiResponse.success_response("Chat title updated")
+            return await apiResponse.success_response("Chat title updated")
         raise HTTPException(detail=f"record with session id {payload.session_id} does not exist", status_code=404)
