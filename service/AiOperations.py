@@ -45,7 +45,7 @@ class AiOperations:
         messages = await chat.aget_messages()
         ai_response = llm.invoke(messages)
         chat.add_message(AIMessage(content=ai_response.content))
-        self.user_client.update_one({"email": chat_input.email}, {"$set": {}})
+        # self.user_client.update_one({"email": chat_input.email}, {"$set": {}})
         return {"session_id": chat_input.session_id, "response": ai_response.content}
 
     @staticmethod
